@@ -1,0 +1,46 @@
+{
+  "name": "cordova-plugin-minisodium",
+  "version": "1.0.0",
+  "description": "A minimal build of the libsodium library, as a plugin for Cordova applications on iOS and Android",
+  "main": "index.js",
+  "cordova": {
+    "id": "cordova-plugin-curve25519",
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LockateMe/cordova-plugin-minisodium.git"
+  },
+  "keywords": [
+    "cordova",
+    "cordova-ios",
+    "cordova-android",
+    "ecosystem:cordova",
+    "curve25519",
+	"ed25519",
+	"X25519",
+    "ecdh",
+	"eddsa",
+	"secretbox",
+    "crypto",
+    "cryptography"
+  ],
+  "devDependencies": {
+    "cordova-plugin-test-framework": ">=1.0.0"
+  },
+  "author": "Ahmad Benmrad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LockateMe/cordova-plugin-minisodium/issues"
+  },
+  "homepage": "https://github.com/LockateMe/cordova-plugin-minisodium#readme"
+}
