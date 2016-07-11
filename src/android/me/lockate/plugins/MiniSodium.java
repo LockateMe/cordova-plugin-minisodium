@@ -16,6 +16,21 @@ public class MiniSodium extends CordovaPlugin {
 	@Override
 	public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
 		if (actions.equals("crypto_secretbox_easy")){
+			String messageHex, nonceHex, keyHex;
+			try {
+				messageHex = args.getString(0);
+				nonceHex = args.getString(1);
+				keyHex = args.getString(2);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return;
+			}
+
+			final byte[] message = fromHex(messageHex);
+			final byte[] nonce = fromHex(nonceHex);
+			final byte[] key = fromHex(keyHex);
+
+			
 
 			return true;
 		} else if (action.equals("crypto_secretbox_open_easy")){
