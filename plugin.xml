@@ -18,6 +18,15 @@
 	</js-module>
 
 	<platform name="ios">
+		<config-file target="config.xml" parent="/*">
+			<feature name="MiniSodium">
+				<param name="ios-package" value="MiniSodium"/>
+			</feature>
+		</config-file>
+		<header-file src="src/ios/MiniSodium.h"/>
+		<source-file src="src/ios/MiniSodium.m"/>
+
+		
 
 	</platform>
 
