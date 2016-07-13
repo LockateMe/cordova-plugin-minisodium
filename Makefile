@@ -2,24 +2,22 @@ GET_DEPENDENCIES = false
 
 .PHONY: ios android get-externals rebuild clearall distclean distclean-ios distclean-android
 
-ios: src/libsodium-ios
+ios: src/libsodium-ios/
 
 android: libsodium-jni/build/libs/libsodium-jni-sources.jar
 
-src/libsodium-ios: libsodium/libsodium-ios
-	cp -r libsodium/libsodium-ios /src/
+src/libsodium-ios/: libsodium/libsodium-ios
+	cp -r libsodium/libsodium-ios src/
 
-libsodium/libsodium-ios: libsodium/autogen.sh
+libsodium/libsodium-ios/: libsodium/autogen.sh
 	pushd libsodium && ./autogen.sh && ./dist-build/ios.sh
 
 libsodium-jni/build/outputs/aar/libsodium-jni-release.aar: libsodium-jni/build.sh
-
+	
 
 libsodium/autogen.sh: get-externals
-	#Libsodium downloaded (iOS copy)
 
 libsodium-jni/build.sh: get-externals
-	#Libsodium downloaded (Android copy)
 
 get-externals:
 	git submodule init
