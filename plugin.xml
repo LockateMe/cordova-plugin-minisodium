@@ -26,8 +26,8 @@
 		<header-file src="src/ios/MiniSodium.h"/>
 		<source-file src="src/ios/MiniSodium.m"/>
 
-		
-
+		<header-file src="src/libsodium-ios/include/sodium.h"/>
+		<source-file src="src/libsodium-ios/lib/libsodium.a"/>
 	</platform>
 
 	<platform name="android">
@@ -43,5 +43,9 @@
 		</config-file>
 
 		<source-file src="src/android/me/lockate/plugins/MiniSodium.java" target-dir="src/me/lockate/plugins" />
+
+		<framework src="src/android/jni.gradle" custom="true" type="gradleReference" />
+
+		<resource-file src="libs/libsodium-jni-release.aar" target="libs/libsodium-jni-release.aar" />
 	</platform>
 </plugin>
