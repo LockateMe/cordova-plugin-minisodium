@@ -1,7 +1,7 @@
 repositories{
   jcenter()
   flatDir{
-      dirs 'src/libsodium-aar'
+      dirs 'src/libsodium-jni'
    }
 }
 

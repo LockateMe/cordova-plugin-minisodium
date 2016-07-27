@@ -4,7 +4,7 @@ GET_DEPENDENCIES = false
 
 ios: src/libsodium-ios/
 
-android: libsodium-jni/build/libs/libsodium-jni-sources.jar
+android: src/libsodium-jni/libsodium-jni-release.aar
 
 src/libsodium-ios/: libsodium/libsodium-ios
 	cp -r libsodium/libsodium-ios src/
@@ -12,12 +12,26 @@ src/libsodium-ios/: libsodium/libsodium-ios
 libsodium/libsodium-ios/: libsodium/autogen.sh
 	pushd libsodium && ./autogen.sh && ./dist-build/ios.sh
 
+src/libsodium-jni/libsodium-jni-release.aar: libsodium-jni/build/outputs/aar/libsodium-jni-release.aar
+	cp libsodium-jni/build/outputs/aar/libsodium-jni-release.aar src/libsodium-jni/libsodium-jni-release.aar
+
 libsodium-jni/build/outputs/aar/libsodium-jni-release.aar: libsodium-jni/build.sh
-	
+	cd libsodium-jni && \
+	./build.sh && \
+	./build-kaliumjni.sh && \
+	./build-libsodiumjni.sh
 
-libsodium/autogen.sh: get-externals
+libsodium/autogen.sh:
+	if [ -d libsodium ]; then
+		get-externals
+	fi
+	echo "libsodium has been cloned"
 
-libsodium-jni/build.sh: get-externals
+libsodium-jni/build.sh:
+	if [ -d libsodium-jni ]; then
+		make get-externals
+	fi
+	echo "libsodium-jni has been cloned"
 
 get-externals:
 	git submodule init
