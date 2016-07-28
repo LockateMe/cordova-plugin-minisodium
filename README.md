@@ -2,14 +2,19 @@
 
 A minimal build of the [libsodium](https://github.com/jedisct1/libsodium.git) library, as a plugin for Cordova applications on iOS and Android.
 
-## Installation
-
-	cordova plugin add cordova-plugin-minisodium
-
 ## Bound methods
 
 * `crypto_secretbox_easy`
 * `crypto_secretbox_open_easy`
+
+## Installation
+
+	cordova plugin add cordova-plugin-minisodium
+
+__Note:__ This plugin is not built for Android API levels below 16. To set the `minSdkVersion` property in your Cordova app. Add the following line in `config.xml`:
+```
+<preference name="android-minSdkVersion" value="16"/>
+```
 
 ## Usage
 
