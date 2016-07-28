@@ -11,19 +11,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.libsodium.jni.NaCl;
 import org.libsodium.jni.Sodium;
 
 public class MiniSodium extends CordovaPlugin {
 	private static final String LOGTAG = "MiniSodium";
 	private static char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-	//private static Sodium libsodium = new Sodium();
+	private static Sodium libsodium;
 
 	@Override
 	public void initialize(CordovaInterface cordova, CordovaWebView webView){
 		super.initialize(cordova, webView);
 
-		Sodium.sodium_init();
+		libsodium = NaCl.sodium();
 	}
 
 	@Override
@@ -46,9 +47,9 @@ public class MiniSodium extends CordovaPlugin {
 
 			cordova.getThreadPool().execute(new Runnable(){
 				public void run(){
-						byte[] cipher = new byte[messageLen + SodiumConstants.crypto_secretbox_macbytes()];
+						byte[] cipher = new byte[messageLen + libsodium.crypto_secretbox_macbytes()];
 
-						int cryptoStatus = Sodium.crypto_secretbox_easy(cipher, message, messageLen, nonce, key);
+						int cryptoStatus = libsodium.crypto_secretbox_easy(cipher, message, messageLen, nonce, key);
 						if (cryptoStatus != 0){
 							callbackContext.error("status:" + cryptoStatus);
 							return;
@@ -78,9 +79,9 @@ public class MiniSodium extends CordovaPlugin {
 
 			cordova.getThreadPool().execute(new Runnable(){
 				public void run(){
-						byte[] message = new byte[cipherLen - Sodium.crypto_secretbox_macbytes()];
+						byte[] message = new byte[cipherLen - libsodium.crypto_secretbox_macbytes()];
 
-						int cryptoStatus = Sodium.crypto_secretbox_open_easy(message, cipher, cipherLen, nonce, key);
+						int cryptoStatus = libsodium.crypto_secretbox_open_easy(message, cipher, cipherLen, nonce, key);
 						if (cryptoStatus != 0){
 							callbackContext.error("status:" + cryptoStatus);
 							return;
