@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schema.android.com/apk/res/android" id="cordova-plugin-minisodium-tests" version="1.0.0">
+	<name>MiniSodium Tests</name>
+	<description>
+		Test vectors for me.lockate.plugins.minisodium
+	</description>
+
+	<license>MIT</license>
+	<keywords>curve25519,ed25519,X25519,ecdh,eddsa,secretbox,crypto,cryptography</keywords>
+	<engines>
+		<engine name="cordova" version=">=3.0.0" />
+	</engines>
+
+	<js-module name="tests" src="tests.js">
+	</js-module>
+</plugin>

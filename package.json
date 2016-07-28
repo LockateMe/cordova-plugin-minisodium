@@ -26,16 +26,18 @@
     "cordova-android",
     "ecosystem:cordova",
     "curve25519",
-	"ed25519",
-	"X25519",
+    "ed25519",
+    "X25519",
     "ecdh",
-	"eddsa",
-	"secretbox",
+    "eddsa",
+    "secretbox",
     "crypto",
     "cryptography"
   ],
   "devDependencies": {
-    "cordova-plugin-test-framework": ">=1.0.0"
+    "cordova-plugin-test-framework": ">=1.0.0",
+    "grunt": "^1.0.1",
+    "grunt-jsvalidate": "^0.2.2"
   },
   "author": "Ahmad Benmrad",
   "license": "MIT",

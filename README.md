@@ -18,8 +18,12 @@ A minimal build of the [libsodium](https://github.com/jedisct1/libsodium.git) li
 1. Create a Cordova/Phonegap application
 2. Add the iOS and/or the Android platforms
 3. Add the [testing framework](https://github.com/apache/cordova-plugin-test-framework) and [bind its page](https://github.com/apache/cordova-plugin-test-framework#running-plugin-tests) as the main page of the app
-4. Add this plugin
-5. Add this plugin's test cases, by adding the plugin located in the `tests` folder
+4. Add the following prefenrence in `config.xml`
+```
+<preference name="android-minSdkVersion" value="16"/>
+```
+5. Add this plugin
+6. Add this plugin's test cases, by adding the plugin located in the `tests` folder
 ```
 	phonegap plugin add https://github.com/LockateMe/cordova-plugin-minisodium.git#:/tests
 ```
