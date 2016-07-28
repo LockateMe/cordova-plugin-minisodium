@@ -4,18 +4,31 @@ import android.util.Log;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaWebView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.libsodium.jni.Sodium;
+
 public class MiniSodium extends CordovaPlugin {
 	private static final String LOGTAG = "MiniSodium";
 	private static char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
+	//private static Sodium libsodium = new Sodium();
+
+	@Override
+	public void initialize(CordovaInterface cordova, CordovaWebView webView){
+		super.initialize(cordova, webView);
+
+		Sodium.sodium_init();
+	}
+
 	@Override
 	public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
-		if (actions.equals("crypto_secretbox_easy")){
+		if (action.equals("crypto_secretbox_easy")){
 			String messageHex, nonceHex, keyHex;
 			try {
 				messageHex = args.getString(0);
@@ -23,17 +36,59 @@ public class MiniSodium extends CordovaPlugin {
 				keyHex = args.getString(2);
 			} catch (Exception e){
 				callbackContext.error(e.getMessage());
-				return;
+				return false;
 			}
 
 			final byte[] message = fromHex(messageHex);
+			final int messageLen = message.length;
 			final byte[] nonce = fromHex(nonceHex);
 			final byte[] key = fromHex(keyHex);
 
-			
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+						byte[] cipher = new byte[messageLen + SodiumConstants.crypto_secretbox_macbytes()];
+
+						int cryptoStatus = Sodium.crypto_secretbox_easy(cipher, message, messageLen, nonce, key);
+						if (cryptoStatus != 0){
+							callbackContext.error("status:" + cryptoStatus);
+							return;
+						}
+
+						callbackContext.success(dumpHex(cipher));
+				}
+			});
 
 			return true;
 		} else if (action.equals("crypto_secretbox_open_easy")){
+			String cipherHex, nonceHex, keyHex;
+
+			try {
+				cipherHex = args.getString(0);
+				nonceHex = args.getString(1);
+				keyHex = args.getString(2);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] cipher = fromHex(cipherHex);
+			final int cipherLen = cipher.length;
+			final byte[] nonce = fromHex(nonceHex);
+			final byte[] key = fromHex(keyHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+						byte[] message = new byte[cipherLen - Sodium.crypto_secretbox_macbytes()];
+
+						int cryptoStatus = Sodium.crypto_secretbox_open_easy(message, cipher, cipherLen, nonce, key);
+						if (cryptoStatus != 0){
+							callbackContext.error("status:" + cryptoStatus);
+							return;
+						}
+
+						callbackContext.success(dumpHex(message));
+				}
+			});
 
 			return true;
 		} else {
