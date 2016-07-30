@@ -30,7 +30,7 @@
 	const unsigned char* key = [self from_hex: keyHex];
 
  	unsigned long long clen = (unsigned long long)(mlen + crypto_secretbox_MACBYTES);
-	unsigned char* c = (unsigned char*) malloc(clen);
+	unsigned char* c = (unsigned char*) sodium_malloc(clen);
 
 	crypto_secretbox_easy(c, message, mlen, nonce, key);
 
@@ -39,7 +39,7 @@
 	CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: cHex];
 	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 
-	free(c);
+	sodium_free(c);
 }
 
 - (void)crypto_secretbox_open_easy:(CDVInvokedUrlCommand*) command {
@@ -61,7 +61,7 @@
 	const unsigned char* key = [self from_hex: keyHex];
 
 	const unsigned long long mlen = (unsigned long long) clen - crypto_secretbox_MACBYTES;
-	unsigned char* m = (unsigned char*) malloc(mlen);
+	unsigned char* m = (unsigned char*) sodium_malloc(mlen);
 
 	if (crypto_secretbox_open_easy(m , ciphertext, clen, nonce, key) != 0){
 		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_DECRYPT"];
@@ -74,7 +74,7 @@
 		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 	}
 
-	free(m);
+	sodium_free(m);
 }
 
 -(void)crypto_sign_keypair:(CDVInvokedUrlCommand*) command {
@@ -85,8 +85,8 @@
 	}
 
 	//No seed is provided
-	unsigned char* pk = (unsigned char*) malloc(crypto_sign_PUBLICKEYBYTES);
-	unsigned char* sk = (unsigned char*) malloc(crypto_sign_SECRETKEYBYTES);
+	unsigned char* pk = (unsigned char*) sodium_malloc(crypto_sign_PUBLICKEYBYTES);
+	unsigned char* sk = (unsigned char*) sodium_malloc(crypto_sign_SECRETKEYBYTES);
 
 	if (crypto_sign_keypair(pk, sk) != 0){
 		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_GENERATE_KEYPAIR"];
@@ -100,8 +100,8 @@
 		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 	}
 
-	free(pk);
-	free(sk);
+	sodium_free(pk);
+	sodium_free(sk);
 }
 
 -(void)crypto_sign_seed_keypair:(CDVInvokedUrlCommand*) command {
@@ -122,8 +122,8 @@
 		return;
 	}
 
-	unsigned char* pk = (unsigned char*) malloc(crypto_sign_PUBLICKEYBYTES);
-	unsigned char* sk = (unsigned char*) malloc(crypto_sign_SECRETKEYBYTES);
+	unsigned char* pk = (unsigned char*) sodium_malloc(crypto_sign_PUBLICKEYBYTES);
+	unsigned char* sk = (unsigned char*) sodium_malloc(crypto_sign_SECRETKEYBYTES);
 
 	if (crypto_sign_seed_keypair(pk, sk, seed) != 0){
 		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_GENERATE_KEYPAIR"];
@@ -137,8 +137,8 @@
 		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 	}
 
-	free(pk);
-	free(sk);
+	sodium_free(pk);
+	sodium_free(sk);
 }
 
 -(void)crypto_sign:(CDVInvokedUrlCommand*) command {
@@ -157,7 +157,7 @@
 	const unsigned long long sklen = (unsigned long long) [skHex length] / 2;
 
 	unsigned long long slen = mlen + crypto_sign_BYTES;
-	unsigned char* s = (unsigned char*) malloc(slen);
+	unsigned char* s = (unsigned char*) sodium_malloc(slen);
 
 	if (crypto_sign(s, &slen, m, mlen, sk) != 0){
 		//Signature failure
@@ -170,7 +170,7 @@
 		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 	}
 
-	free(s);
+	sodium_free(s);
 }
 
 -(void)crypto_sign_open:(CDVInvokedUrlCommand*) command {
@@ -189,7 +189,7 @@
 	const unsigned long long pklen = (unsigned long long) [pkHex length] / 2;
 
 	unsigned long long mlen = slen - crypto_sign_BYTES;
-	unsigned char* m = (unsigned char*) malloc(mlen);
+	unsigned char* m = (unsigned char*) sodium_malloc(mlen);
 
 	int sigStatus = crypto_sign_open(m, &mlen, s, slen, pk);
 
@@ -204,7 +204,7 @@
 
 	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 
-	free(m);
+	sodium_free(m);
 }
 
 -(void)crypto_sign_detached:(CDVInvokedUrlCommand*) command {
@@ -222,7 +222,7 @@
 	const unsigned char* sk = [self from_hex: skHex];
 
 	unsigned long long slen;
-	unsigned char* s = (unsigned char*)malloc(crypto_sign_BYTES);
+	unsigned char* s = (unsigned char*) sodium_malloc(crypto_sign_BYTES);
 
 	if (crypto_sign_detached(s, &slen, m, mlen, sk) != 0){
 		//Signature failure
@@ -235,7 +235,7 @@
 		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 	}
 
-	free(s);
+	sodium_free(s);
 }
 
 -(void)crypto_sign_verify_detached:(CDVInvokedUrlCommand*) command {
@@ -286,7 +286,7 @@
 	const unsigned char* sk = [self from_hex: skHex];
 	const unsigned long long sklen = (unsigned long long) [skHex length] / 2;
 
-	unsigned char* seed = (unsigned char*) malloc(crypto_sign_SEEDBYTES);
+	unsigned char* seed = (unsigned char*) sodium_malloc(crypto_sign_SEEDBYTES);
 
 	CDVPluginResult *result;
 	if (crypto_sign_ed25519_sk_to_seed(seed, sk) != 0){
@@ -298,7 +298,7 @@
 
 	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 
-	free(seed);
+	sodium_free(seed);
 }
 
 -(void)crypto_sign_ed25519_sk_to_pk:(CDVInvokedUrlCommand*) command {
@@ -312,7 +312,7 @@
 	const unsigned char* sk = [self from_hex: skHex];
 	const unsigned long long sklen = (unsigned long long) [skHex length] / 2;
 
-	unsigned char* pk = (unsigned char*) malloc(crypto_sign_PUBLICKEYBYTES);
+	unsigned char* pk = (unsigned char*) sodium_malloc(crypto_sign_PUBLICKEYBYTES);
 
 	CDVPluginResult *result;
 	if (crypto_sign_ed25519_sk_to_pk(pk, sk) != 0){
@@ -324,7 +324,7 @@
 
 	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 
-	free(pk);
+	sodium_free(pk);
 }
 
 -(unsigned char*)from_hex:(NSString*)s {
