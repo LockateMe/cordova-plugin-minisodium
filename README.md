@@ -4,8 +4,19 @@ A minimal build of the [libsodium](https://github.com/jedisct1/libsodium.git) li
 
 ## Bound methods
 
+### Secretbox construction
 * `crypto_secretbox_easy`
 * `crypto_secretbox_open_easy`
+
+### Public key signatures (Ed25519)
+* `crypto_sign`
+* `crypto_sign_open`
+* `crypto_sign_detached`
+* `crypto_sign_verify_detached`
+* `crypto_sign_keypair`
+* `crypto_sign_seed_keypair`
+* `crypto_sign_ed25519_sk_to_pk`
+* `crypto_sign_ed25519_sk_to_seed`
 
 ## Installation
 
