@@ -149,9 +149,39 @@ exports.defineAutoTests = function(){
   });
 
   describe('ed25519 - attached and detached signatures', function(){
-    it('should be a defined function', function(){
+    it('crypto_sign should be a defined function', function(){
       expect(window.plugins.MiniSodium.crypto_sign).toBeDefined();
       expect(typeof window.plugins.MiniSodium.crypto_sign).toEqual('function');
+    });
+
+    it('crypto_sign_open should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign_open).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign_open).toEqual('function');
+    });
+
+    it('crypto_sign_detached should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign_detached).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign_detached).toEqual('function');
+    });
+
+    it('crypto_sign_verify_detached should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign_verify_detached).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign_verify_detached).toEqual('function');
+    });
+
+    it('crypto_sign_seed_keypair should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign_seed_keypair).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign_seed_keypair).toEqual('function');
+    });
+
+    it('crypto_sign_ed25519_sk_to_seed should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_seed).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_seed).toEqual('function');
+    });
+
+    it('crypto_sign_ed25519_sk_to_pk should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_pk).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_pk).toEqual('function');
     });
 
     it('should pass the test vectors', function(done){
@@ -182,44 +212,55 @@ exports.defineAutoTests = function(){
 
             expect(seed).toEqual(currentVector.sk.substr(0, window.plugins.MiniSodium.crypto_sign_SEEDBYTES * 2));
 
-            window.plugins.MiniSodium.crypto_sign(currentVector.m, currentVector.sk, function(err, sm){
+            window.plugins.MiniSodium.crypto_sign_seed_keypair(seed, function(err, keyPair){
               if (err){
                 throw err;
                 done();
                 return;
               }
 
-              expect(sm.substr(0, window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.s);
-              expect(sm.substr(window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.m);
+              expect(keyPair.sk).toEqual(currentVector.sk);
+              expect(keyPair.pk).toEqual(currentVector.pk);
 
-              window.plugins.MiniSodium.crypto_sign_open(sm, pk, function(err, m){
+              window.plugins.MiniSodium.crypto_sign(currentVector.m, currentVector.sk, function(err, sm){
                 if (err){
                   throw err;
                   done();
                   return;
                 }
 
-                expect(m).toEqual(currentVector.m);
+                expect(sm.substr(0, window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.s);
+                expect(sm.substr(window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.m);
 
-                window.plugins.MiniSodium.crypto_sign_detached(currentVector.m, currentVector.sk, function(err, sig){
+                window.plugins.MiniSodium.crypto_sign_open(sm, pk, function(err, m){
                   if (err){
                     throw err;
                     done();
                     return;
                   }
 
-                  expect(sig).toEqual(currentVector.s);
+                  expect(m).toEqual(currentVector.m);
 
-                  window.plugins.MiniSodium.crypto_sign_verify_detached(sig, currentVector.m, currentVector.pk, function(err, isValid){
+                  window.plugins.MiniSodium.crypto_sign_detached(currentVector.m, currentVector.sk, function(err, sig){
                     if (err){
                       throw err;
                       done();
                       return;
                     }
 
-                    expect(isValid).toBeTruthy();
+                    expect(sig).toEqual(currentVector.s);
 
-                    nextVector();
+                    window.plugins.MiniSodium.crypto_sign_verify_detached(sig, currentVector.m, currentVector.pk, function(err, isValid){
+                      if (err){
+                        throw err;
+                        done();
+                        return;
+                      }
+
+                      expect(isValid).toBeTruthy();
+
+                      nextVector();
+                    });
                   });
                 });
               });
@@ -231,7 +272,7 @@ exports.defineAutoTests = function(){
       function nextVector(){
         vectorIndex++;
         if (vectorIndex == edVectors.length){
-          console.log('Ed25519 testing - completed')
+          console.log('Ed25519 testing - completed');
           done();
         } else setTimeout(testOne, 0);
       }
@@ -240,6 +281,44 @@ exports.defineAutoTests = function(){
     }, 120000);
     //Giving it 2 minutes to run 1024 test vectors, before timing out
     //that generous time is to make sure that the test has enough time to complete on a now-obsolete phone (e.g: HTC One M7; how time flies...)
+  });
+
+  describe('ed25519 - keypair generation', function(){
+    it('crypto_sign_keypair should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign_keypair).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign_keypair).toEqual('function');
+    });
+
+    it('should generate a valid keypair', function(done){
+      window.plugins.MiniSodium.crypto_sign_keypair(function(err, keyPair){
+        if (err){
+          throw err;
+          done();
+          return;
+        }
+
+        var m = randomBuffer(Math.floor(Math.random() * 501 + 500));
+        window.plugins.MiniSodium.crypto_sign_detached(m, keyPair.sk, function(err, signature){
+          if (err){
+            throw err;
+            done();
+            return;
+          }
+
+          window.plugins.MiniSodium.crypto_sign_verify_detached(signature, m, keyPair.pk, function(err, isValid){
+            if (err){
+              throw err;
+              done();
+              return;
+            }
+
+            expect(isValid).toBeTruthy();
+
+            done();
+          });
+        });
+      });
+    });
   });
 
   function binValueOfHexCouple(c){
