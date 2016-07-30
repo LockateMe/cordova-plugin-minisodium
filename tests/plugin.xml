@@ -13,4 +13,7 @@
 
 	<js-module name="tests" src="tests.js">
 	</js-module>
+	<js-module name="ed25519vectors" src="ed-vectors.js">
+		<clobbers target="window.plugins.ed25519vectors"/>
+	</js-module>
 </plugin>

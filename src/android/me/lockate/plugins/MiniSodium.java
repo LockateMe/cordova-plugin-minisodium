@@ -51,7 +51,7 @@ public class MiniSodium extends CordovaPlugin {
 
 						int cryptoStatus = libsodium.crypto_secretbox_easy(cipher, message, messageLen, nonce, key);
 						if (cryptoStatus != 0){
-							Log.d("cryptoStatus:" + cryptoStatus);
+							Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 							callbackContext.error("CANNOT_ENCRYPT");
 							return;
 						}
@@ -84,7 +84,7 @@ public class MiniSodium extends CordovaPlugin {
 
 						int cryptoStatus = libsodium.crypto_secretbox_open_easy(message, cipher, cipherLen, nonce, key);
 						if (cryptoStatus != 0){
-							Log.d("cryptoStatus:" + cryptoStatus);
+							Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 							callbackContext.error("CANNOT_DECRYPT");
 							return;
 						}
@@ -103,14 +103,19 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign_keypair(pk, sk);
 
 					if (cryptoStatus != 0){
-						Log.d("cryptoStatus:" + cryptoStatus);
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 						callbackContext.error("CANNOT_GENERATE_KEYPAIR");
 						return;
 					}
 
 					JSONObject resultObj = new JSONObject();
-					resultObj.put("sk", dumpHex(sk));
-					resultObj.put("pk", dumpHex(pk));
+					try {
+						resultObj.put("sk", dumpHex(sk));
+						resultObj.put("pk", dumpHex(pk));
+					} catch (Exception e){
+						callbackContext.error(e.getMessage());
+						return;
+					}
 
 					callbackContext.success(resultObj);
 				}
@@ -137,14 +142,19 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign_seed_keypair(pk, sk, seed);
 
 					if (cryptoStatus != 0){
-						Log.d("cryptoStatus:" + cryptoStatus);
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 						callbackContext.error("CANNOT_GENERATE_KEYPAIR");
 						return;
 					}
 
 					JSONObject resultObj = new JSONObject();
-					resultObj.put("sk", dumpHex(sk));
-					resultObj.put("pk", dumpHex(pk));
+					try {
+						resultObj.put("sk", dumpHex(sk));
+						resultObj.put("pk", dumpHex(pk));
+					} catch (Exception e){
+						callbackContext.error(e.getMessage());
+						return;
+					}
 
 					callbackContext.success(resultObj);
 				}
@@ -175,7 +185,7 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign(sig, slen, m, mlen, sk);
 
 					if (cryptoStatus != 0){
-						Log.d("cryptoStatus:" + cryptoStatus);
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 						callbackContext.error("CANNOT_SIGN");
 						return;
 					}
@@ -209,10 +219,10 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign_open(m, mlen, sig, slen, pk);
 
 					if (cryptoStatus != 0){
-						Log.d("cryptoStatus:" + cryptoStatus);
-						callbackContext.success(false);
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.success(0);
 					} else {
-						callbackContext.succes(dumpHex(m));
+						callbackContext.success(dumpHex(m));
 					}
 				}
 			});
@@ -242,7 +252,7 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign_detached(sig, slen, m, mlen, sk);
 
 					if (cryptoStatus != 0){
-						Log.d("cryptoStatus:" + cryptoStatus);
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 						callbackContext.error("CANNOT_SIGN");
 						return;
 					}
@@ -274,9 +284,9 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign_verify_detached(s, m, mlen, pk);
 
 					if (cryptoStatus == 0){
-						callbackContext.success(true);
+						callbackContext.success(1);
 					} else {
-						callbackContext.success(false);
+						callbackContext.success(0);
 					}
 				}
 			});
@@ -301,7 +311,7 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign_ed25519_sk_to_seed(seed, sk);
 
 					if (cryptoStatus != 0){
-						Log.d("cryptoStatus:" + cryptoStatus);
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 						callbackContext.error("CANNOT_COMPUTE");
 						return;
 					}
@@ -330,7 +340,7 @@ public class MiniSodium extends CordovaPlugin {
 					int cryptoStatus = libsodium.crypto_sign_ed25519_sk_to_pk(pk, sk);
 
 					if (cryptoStatus != 0){
-						Log.d("cryptoStatus:" + cryptoStatus);
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
 						callbackContext.error("CANNOT_COMPUTE");
 						return;
 					}

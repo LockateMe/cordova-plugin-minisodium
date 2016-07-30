@@ -5,11 +5,11 @@ function isValidInput(i, varName, expectedLength){
 	if (expectedLength){
 		if (is_hex(i)){
 			if (i.length != expectedLength * 2) throw new TypeError(varName + ' must be ' + expectedLength + ' bytes long');
-		} else if (i instanceof Uint8Array && i.length > 0){
+		} else if (i instanceof Uint8Array){
 			if (i.length != expectedLength) throw new TypeError(varName + ' must be ' + expectedLength + ' bytes long');
 		} else throw new TypeError(varName + ' must be a string or a Uint8Array, and must ' + expectedLength + ' bytes long');
 	} else {
-		if (!(is_hex(i) || (i instanceof Uint8Array && i.length > 0))) throw new TypeError(varName + ' must be either a string or a Uint8Array');
+		if (!(is_hex(i) || (i instanceof Uint8Array))) throw new TypeError(varName + ' must be either a string or a Uint8Array');
 	}
 }
 
@@ -96,7 +96,7 @@ var MiniSodium = {
 			isValidInput(message, 'message');
 			isValidInput(secretKey, 'secretKey', MiniSodium.crypto_sign_SECRETKEYBYTES);
 
-			if (message.length == 0) throw new Error('message cannot be empty');
+			//if (message.length == 0) throw new Error('message cannot be empty');
 		} catch (e){
 			callback(e);
 			return;
@@ -122,7 +122,7 @@ var MiniSodium = {
 		signedMessage = to_hex(signedMessage);
 		publicKey = to_hex(publicKey);
 
-		if (signedMessage.length <= MiniSodium.crypto_sign_BYTES){
+		if (signedMessage.length < MiniSodium.crypto_sign_BYTES){
 			callback(new Error('signed message must be longer than crypto_sign_BYTES'));
 			return;
 		}
@@ -137,7 +137,7 @@ var MiniSodium = {
 			isValidInput(message, 'message');
 			isValidInput(secretKey, 'secretKey', MiniSodium.crypto_sign_SECRETKEYBYTES);
 
-			if (message.length == 0) throw new Error('message cannot be empty');
+			//if (message.length == 0) throw new Error('message cannot be empty');
 		} catch (e){
 			callback(e);
 			return;
@@ -222,7 +222,7 @@ var MiniSodium = {
     return str;
   },
 	is_hex: function(s){
-		return typeof s === 'string' && s.length % 2 === 0 && /^([a-f]|[0-9])+$/ig.test(s);
+		return typeof s === 'string' && s.length % 2 === 0 && (s.length > 0 ? /^([a-f]|[0-9])+$/ig.test(s) : true);
 	}
 };
 

@@ -82,11 +82,10 @@ exports.defineAutoTests = function(){
     });
 
     it('should encrypt', function(done){
-      var fail = jasmine.createSpy('fail');
-
       window.plugins.MiniSodium.crypto_secretbox_easy(secretboxEasyCase.m, secretboxEasyCase.n, secretboxEasyCase.k, function(err, cipherHex){
         if (err){
-          fail(err);
+          throw err;
+          done();
           return;
         }
 
@@ -105,11 +104,10 @@ exports.defineAutoTests = function(){
     });
 
     it('should decrypt', function(done){
-      var fail = jasmine.createSpy('fail');
 
       window.plugins.MiniSodium.crypto_secretbox_open_easy(secretboxEasyCase.c, secretboxEasyCase.n, secretboxEasyCase.k, function(err, plainHex){
         if (err){
-          fail(err);
+          throw err;
           done();
           return;
         }
@@ -123,8 +121,6 @@ exports.defineAutoTests = function(){
 
   describe('random secretbox', function(){
     it('should encrypt and decrypt', function(done){
-      var fail = jasmine.createSpy('fail');
-
       var m = randomBuffer(Math.floor(500 + Math.random() * 501));
       var mHex = to_hex(m);
 
@@ -133,14 +129,14 @@ exports.defineAutoTests = function(){
 
       window.plugins.MiniSodium.crypto_secretbox_easy(m, n, k, function(err, cipherHex){
         if (err){
-          fail(err);
+          throw err;
           done();
           return;
         }
 
         window.plugins.MiniSodium.crypto_secretbox_open_easy(cipherHex, n, k, function(err, plainHex){
           if (err){
-            fail(err);
+            throw err;
             done();
             return;
           }
@@ -150,6 +146,100 @@ exports.defineAutoTests = function(){
         });
       });
     });
+  });
+
+  describe('ed25519 - attached and detached signatures', function(){
+    it('should be a defined function', function(){
+      expect(window.plugins.MiniSodium.crypto_sign).toBeDefined();
+      expect(typeof window.plugins.MiniSodium.crypto_sign).toEqual('function');
+    });
+
+    it('should pass the test vectors', function(done){
+      var edVectors = window.plugins.ed25519vectors;
+      var vectorIndex = 0;
+
+      function testOne(){
+        if (vectorIndex % 128 === 0){
+          console.log('Ed25519 testing: ' + Math.round((vectorIndex / edVectors.length) * 100) + '% complete');
+        }
+
+        var currentVector = edVectors[vectorIndex];
+        window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_pk(currentVector.sk, function(err, pk){
+          if (err){
+            throw err;
+            done();
+            return;
+          }
+
+          expect(pk).toEqual(currentVector.pk);
+
+          window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_seed(currentVector.sk, function(err, seed){
+            if (err){
+              throw err;
+              done();
+              return;
+            }
+
+            expect(seed).toEqual(currentVector.sk.substr(0, window.plugins.MiniSodium.crypto_sign_SEEDBYTES * 2));
+
+            window.plugins.MiniSodium.crypto_sign(currentVector.m, currentVector.sk, function(err, sm){
+              if (err){
+                throw err;
+                done();
+                return;
+              }
+
+              expect(sm.substr(0, window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.s);
+              expect(sm.substr(window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.m);
+
+              window.plugins.MiniSodium.crypto_sign_open(sm, pk, function(err, m){
+                if (err){
+                  throw err;
+                  done();
+                  return;
+                }
+
+                expect(m).toEqual(currentVector.m);
+
+                window.plugins.MiniSodium.crypto_sign_detached(currentVector.m, currentVector.sk, function(err, sig){
+                  if (err){
+                    throw err;
+                    done();
+                    return;
+                  }
+
+                  expect(sig).toEqual(currentVector.s);
+
+                  window.plugins.MiniSodium.crypto_sign_verify_detached(sig, currentVector.m, currentVector.pk, function(err, isValid){
+                    if (err){
+                      throw err;
+                      done();
+                      return;
+                    }
+
+                    expect(isValid).toBeTruthy();
+
+                    nextVector();
+                  });
+                });
+              });
+            });
+          });
+        });
+      }
+
+      function nextVector(){
+        vectorIndex++;
+        if (vectorIndex == edVectors.length){
+          console.log('Ed25519 testing - completed')
+          done();
+        } else setTimeout(testOne, 0);
+      }
+
+      testOne();
+    }, 120000);
+    //Giving it 2 minutes to run 1024 test vectors, before timing out
+    //that generous time is to make sure that the test has enough time to complete on a now-obsolete phone (e.g: HTC One M7; how time flies...)
   });
 
   function binValueOfHexCouple(c){

@@ -296,6 +296,8 @@
 		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: seedHex];
 	}
 
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
 	free(seed);
 }
 
