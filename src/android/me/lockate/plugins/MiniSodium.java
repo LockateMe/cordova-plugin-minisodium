@@ -51,7 +51,8 @@ public class MiniSodium extends CordovaPlugin {
 
 						int cryptoStatus = libsodium.crypto_secretbox_easy(cipher, message, messageLen, nonce, key);
 						if (cryptoStatus != 0){
-							callbackContext.error("status:" + cryptoStatus);
+							Log.d("cryptoStatus:" + cryptoStatus);
+							callbackContext.error("CANNOT_ENCRYPT");
 							return;
 						}
 
@@ -83,11 +84,258 @@ public class MiniSodium extends CordovaPlugin {
 
 						int cryptoStatus = libsodium.crypto_secretbox_open_easy(message, cipher, cipherLen, nonce, key);
 						if (cryptoStatus != 0){
-							callbackContext.error("status:" + cryptoStatus);
+							Log.d("cryptoStatus:" + cryptoStatus);
+							callbackContext.error("CANNOT_DECRYPT");
 							return;
 						}
 
 						callbackContext.success(dumpHex(message));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_keypair")){
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] pk = new byte[libsodium.crypto_sign_publickeybytes()];
+					byte[] sk = new byte[libsodium.crypto_sign_secretkeybytes()];
+
+					int cryptoStatus = libsodium.crypto_sign_keypair(pk, sk);
+
+					if (cryptoStatus != 0){
+						Log.d("cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_GENERATE_KEYPAIR");
+						return;
+					}
+
+					JSONObject resultObj = new JSONObject();
+					resultObj.put("sk", dumpHex(sk));
+					resultObj.put("pk", dumpHex(pk));
+
+					callbackContext.success(resultObj);
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_seed_keypair")){
+			String seedHex;
+
+			try {
+				seedHex = args.getString(0);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] seed = fromHex(seedHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] pk = new byte[libsodium.crypto_sign_publickeybytes()];
+					byte[] sk = new byte[libsodium.crypto_sign_secretkeybytes()];
+
+					int cryptoStatus = libsodium.crypto_sign_seed_keypair(pk, sk, seed);
+
+					if (cryptoStatus != 0){
+						Log.d("cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_GENERATE_KEYPAIR");
+						return;
+					}
+
+					JSONObject resultObj = new JSONObject();
+					resultObj.put("sk", dumpHex(sk));
+					resultObj.put("pk", dumpHex(pk));
+
+					callbackContext.success(resultObj);
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign")){
+			String mHex, skHex;
+
+			try {
+				mHex = args.getString(0);
+				skHex = args.getString(1);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] m = fromHex(mHex);
+			final int mlen = m.length;
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] sig = new byte[mlen + libsodium.crypto_sign_bytes()];
+					int[] slen = new int[1];
+					slen[0] = sig.length;
+
+					int cryptoStatus = libsodium.crypto_sign(sig, slen, m, mlen, sk);
+
+					if (cryptoStatus != 0){
+						Log.d("cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_SIGN");
+						return;
+					}
+
+					callbackContext.success(dumpHex(sig));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_open")){
+			String sigHex, pkHex;
+
+			try {
+				sigHex = args.getString(0);
+				pkHex = args.getString(1);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] sig = fromHex(sigHex);
+			final int slen = sig.length;
+			final byte[] pk = fromHex(pkHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] m = new byte[slen - libsodium.crypto_sign_bytes()];
+					int[] mlen = new int[1];
+					mlen[0] = m.length;
+
+					int cryptoStatus = libsodium.crypto_sign_open(m, mlen, sig, slen, pk);
+
+					if (cryptoStatus != 0){
+						Log.d("cryptoStatus:" + cryptoStatus);
+						callbackContext.success(false);
+					} else {
+						callbackContext.succes(dumpHex(m));
+					}
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_detached")){
+			String mHex, skHex;
+
+			try {
+				mHex = args.getString(0);
+				skHex = args.getString(1);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] m = fromHex(mHex);
+			final int mlen = m.length;
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] sig = new byte[libsodium.crypto_sign_bytes()];
+					int[] slen = new int[1];
+					slen[0] = libsodium.crypto_sign_bytes();
+
+					int cryptoStatus = libsodium.crypto_sign_detached(sig, slen, m, mlen, sk);
+
+					if (cryptoStatus != 0){
+						Log.d("cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_SIGN");
+						return;
+					}
+
+					callbackContext.success(dumpHex(sig));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_verify_detached")){
+			String sHex, mHex, pkHex;
+
+			try {
+				sHex = args.getString(0);
+				mHex = args.getString(1);
+				pkHex = args.getString(2);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] s = fromHex(sHex);
+			final byte[] m = fromHex(mHex);
+			final int mlen = m.length;
+			final byte[] pk = fromHex(pkHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					int cryptoStatus = libsodium.crypto_sign_verify_detached(s, m, mlen, pk);
+
+					if (cryptoStatus == 0){
+						callbackContext.success(true);
+					} else {
+						callbackContext.success(false);
+					}
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_ed25519_sk_to_seed")){
+			String skHex;
+
+			try {
+				skHex = args.getString(0);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] seed = new byte[libsodium.crypto_sign_seedbytes()];
+
+					int cryptoStatus = libsodium.crypto_sign_ed25519_sk_to_seed(seed, sk);
+
+					if (cryptoStatus != 0){
+						Log.d("cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(seed));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_ed25519_sk_to_pk")){
+			String skHex;
+
+			try {
+				skHex = args.getString(0);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] pk = new byte[libsodium.crypto_sign_publickeybytes()];
+
+					int cryptoStatus = libsodium.crypto_sign_ed25519_sk_to_pk(pk, sk);
+
+					if (cryptoStatus != 0){
+						Log.d("cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(pk));
 				}
 			});
 
