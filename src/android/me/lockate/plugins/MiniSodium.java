@@ -585,9 +585,9 @@ public class MiniSodium extends CordovaPlugin {
 				return false;
 			}
 
-			final byte[] m = fromHex(mHex)
+			final byte[] m = fromHex(mHex);
 			final int mlen = m.length;
-			final byte[] n = fromHex(n);
+			final byte[] n = fromHex(nHex);
 			final byte[] pk = fromHex(pkHex);
 			final byte[] sk = fromHex(skHex);
 
@@ -608,15 +608,173 @@ public class MiniSodium extends CordovaPlugin {
 
 			return true;
 		} else if (action.equals("crypto_box_open_easy")){
+			String cHex, nHex, pkHex, skHex;
+
+			try {
+				cHex = args.getString(0);
+				nHex = args.getString(1);
+				pkHex = args.getString(2);
+				skHex = args.getString(3);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] c = fromHex(cHex);
+			final int clen = c.length;
+			final byte[] n = fromHex(nHex);
+			final byte[] pk = fromHex(pkHex);
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					int mlen = clen - libsodium.crypto_box_macbytes();
+					byte[] m = new byte[mlen];
+
+					int cryptoStatus = libsodium.crypto_box_open_easy(m, c, clen, n, pk, sk);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_DECRYPT");
+						return;
+					}
+
+					callbackContext.success(dumpHex(m));
+				}
+			});
 
 			return true;
 		} else if (action.equals("crypto_box_seal")){
+			String mHex, pkHex;
+
+			try {
+				mHex = args.getString(0);
+				pkHex = args.getString(1);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] m = fromHex(mHex);
+			final int mlen = m.length;
+			final byte[] pk = fromHex(pkHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					int clen = mlen + libsodium.crypto_box_sealbytes();
+					byte[] c = new byte[clen];
+
+					int cryptoStatus = libsodium.crypto_box_seal(c, m, mlen, pk);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_ENCRYPT");
+						return;
+					}
+
+					callbackContext.success(dumpHex(c));
+				}
+			});
 
 			return true;
 		} else if (action.equals("crypto_box_seal_open")){
+			String cHex, pkHex, skHex;
+
+			try {
+				cHex = args.getString(0);
+				pkHex = args.getString(1);
+				skHex = args.getString(2);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] c = fromHex(cHex);
+			final int clen = c.length;
+			final byte[] pk = fromHex(pkHex);
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					int mlen = clen - libsodium.crypto_box_sealbytes();
+					byte[] m = new byte[mlen];
+
+					int cryptoStatus = libsodium.crypto_box_seal_open(m, c, clen, pk, sk);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_DECRYPT");
+						return;
+					}
+
+					callbackContext.success(dumpHex(m));
+				}
+			});
 
 			return true;
 		} else if (action.equals("crypto_generichash")){
+			if (args.length() < 2 || args.length() > 3){
+				callbackContext.error("INVALID_NUMBER_OF_ARGUMENTS");
+				return false;
+			}
+
+			String mHex;
+			int _hlen;
+			try {
+				_hlen = args.getInt(0);
+				mHex = args.getString(1);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final int hlen = _hlen;
+			final byte[] m = fromHex(mHex);
+			final int mlen = m.length;
+
+			if (args.length() == 2){
+				cordova.getThreadPool().execute(new Runnable(){
+					public void run(){
+						byte[] h = new byte[hlen];
+
+						int cryptoStatus = libsodium.crypto_generichash(h, hlen, m, mlen, null, 0);
+						if (cryptoStatus != 0){
+							Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+							callbackContext.error("CANNOT_HASH");
+							return;
+						}
+
+						callbackContext.success(dumpHex(h));
+					}
+				});
+			} else if (args.length() == 3) {
+				String kHex;
+				try {
+					kHex = args.getString(2);
+				} catch (Exception e){
+					callbackContext.error(e.getMessage());
+					return false;
+				}
+
+				final byte[] k = fromHex(kHex);
+				final int klen = k.length;
+
+				cordova.getThreadPool().execute(new Runnable(){
+					public void run(){
+						byte[] h = new byte[hlen];
+
+						int cryptoStatus = libsodium.crypto_generichash(h, hlen, m, mlen, k, klen);
+						if (cryptoStatus != 0){
+							Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+							callbackContext.error("CANNOT_HASH");
+							return;
+						}
+
+						callbackContext.success(dumpHex(h));
+					}
+				});
+			} else {
+				Log.d(LOGTAG, "How the hell?");
+				callbackContext.error("INVALID_NUMBER_OF_ARGUMENTS");
+				return false;
+			}
 
 			return true;
 		} else {

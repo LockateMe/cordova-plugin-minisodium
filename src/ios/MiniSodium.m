@@ -522,14 +522,108 @@
 
 -(void)crypto_box_seal:(CDVInvokedUrlCommand*)command {
 	if (![self sodium_init_check: command]) return;
+
+	NSString *mHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* m = [self from_hex: mHex];
+	const unsigned long long mlen = (unsigned long long) [mHex length] / 2;
+
+	NSString *pkHex = [command.arguments objectAtIndex: 1];
+	const unsigned char* pk = [self from_hex: pkHex];
+
+	unsigned long long clen = mlen + crypto_box_SEALBYTES;
+	unsigned char* c = (unsigned char*) sodium_malloc(clen);
+
+	CDVPluginResult *result;
+	if (crypto_box_seal(c, m, mlen, pk) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_ENCRYPT"];
+	} else {
+		NSString *cHex = [self to_hex: c withLength: clen];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: cHex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(c);
 }
 
 -(void)crypto_box_seal_open:(CDVInvokedUrlCommand*)command {
 	if (![self sodium_init_check: command]) return;
+
+		NSString *cHex = [command.arguments objectAtIndex: 0];
+		const unsigned char* c = [self from_hex: cHex];
+		const unsigned long long clen = (unsigned long long) [cHex length] / 2;
+
+		NSString *pkHex = [command.arguments objectAtIndex: 1];
+		const unsigned char* pk = [self from_hex: pkHex];
+
+		NSString *skHex = [command.arguments objectAtIndex: 2];
+		const unsigned char* sk = [self from_hex: skHex];
+
+		unsigned long long mlen = clen - crypto_box_SEALBYTES;
+		unsigned char* m = (unsigned char*) sodium_malloc(mlen);
+
+		CDVPluginResult *result;
+		if (crypto_box_seal_open(m, c, clen, pk, sk) != 0){
+			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_DECRYPT"];
+		} else {
+			NSString *mHex = [self to_hex: m withLength: mlen];
+			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: mHex];
+		}
+
+		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+		sodium_free(m);
 }
 
 -(void)crypto_generichash:(CDVInvokedUrlCommand*)command {
 	if (![self sodium_init_check: command]) return;
+
+	if ([command.arguments count] < 2 || [command.arguments count] > 3){
+		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"INVALID_NUMBER_OF_ARGUMENTS"];
+		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+		return;
+	}
+
+	const unsigned int hlen = [[command.arguments objectAtIndex: 0] unsignedIntValue];
+	if (hlen < crypto_generichash_BYTES){
+		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"HASH_TOO_SHORT"];
+		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+		return;
+	}
+
+	NSString *mHex = [command.arguments objectAtIndex: 1];
+	const unsigned char* m = [self from_hex: mHex];
+	const unsigned long long mlen = (unsigned long long)[mHex length] / 2;
+
+	unsigned char* h = (unsigned char*) sodium_malloc(hlen);
+
+	CDVPluginResult *result;
+	if ([command.arguments count] == 2){
+		if (crypto_generichash(h, hlen, m, mlen, NULL, 0) != 0){
+			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_HASH"];
+		} else {
+			NSString *hHex = [self to_hex: h withLength: crypto_generichash_BYTES];
+			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: hHex];
+		}
+	} else if ([command.arguments count] == 3){
+		NSString *kHex = [command.arguments objectAtIndex: 1];
+		const unsigned char* k = [self from_hex: kHex];
+		const unsigned long long klen = (unsigned long long)[kHex length] / 2;
+
+		if (crypto_generichash(h, hlen, m, mlen, k, klen) != 0){
+			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_HASH"];
+		} else {
+			NSString *hHex = [self to_hex: h withLength: crypto_generichash_BYTES];
+			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: hHex];
+		}
+	} else {
+		NSLog(@"How the hell?");
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"INVALID_NUMBER_OF_ARGUMENTS"];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(h);
 }
 
 -(unsigned char*)from_hex:(NSString*)s {
