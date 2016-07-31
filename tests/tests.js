@@ -82,14 +82,14 @@ exports.defineAutoTests = function(){
     });
 
     it('should encrypt', function(done){
-      window.plugins.MiniSodium.crypto_secretbox_easy(secretboxEasyCase.m, secretboxEasyCase.n, secretboxEasyCase.k, function(err, cipherHex){
+      window.plugins.MiniSodium.crypto_secretbox_easy(secretboxEasyCase.m, secretboxEasyCase.n, secretboxEasyCase.k, function(err, cipher){
         if (err){
           throw err;
           done();
           return;
         }
 
-        expect(cipherHex == secretboxEasyCase.c).toEqual(true);
+        expect(bufEquals(cipher, from_hex(secretboxEasyCase.c))).toEqual(true);
         done();
       });
     });
@@ -105,14 +105,14 @@ exports.defineAutoTests = function(){
 
     it('should decrypt', function(done){
 
-      window.plugins.MiniSodium.crypto_secretbox_open_easy(secretboxEasyCase.c, secretboxEasyCase.n, secretboxEasyCase.k, function(err, plainHex){
+      window.plugins.MiniSodium.crypto_secretbox_open_easy(secretboxEasyCase.c, secretboxEasyCase.n, secretboxEasyCase.k, function(err, plain){
         if (err){
           throw err;
           done();
           return;
         }
 
-        expect(plainHex == secretboxEasyCase.m).toEqual(true);
+        expect(bufEquals(plain, from_hex(secretboxEasyCase.m))).toEqual(true);
         done();
       });
     });
@@ -127,21 +127,21 @@ exports.defineAutoTests = function(){
       var k = randomBuffer(window.plugins.MiniSodium.crypto_secretbox_KEYBYTES);
       var n = randomBuffer(window.plugins.MiniSodium.crypto_secretbox_NONCEBYTES);
 
-      window.plugins.MiniSodium.crypto_secretbox_easy(m, n, k, function(err, cipherHex){
+      window.plugins.MiniSodium.crypto_secretbox_easy(m, n, k, function(err, cipher){
         if (err){
           throw err;
           done();
           return;
         }
 
-        window.plugins.MiniSodium.crypto_secretbox_open_easy(cipherHex, n, k, function(err, plainHex){
+        window.plugins.MiniSodium.crypto_secretbox_open_easy(cipher, n, k, function(err, plain){
           if (err){
             throw err;
             done();
             return;
           }
 
-          expect(bufEquals(m, from_hex(plainHex))).toEqual(true);
+          expect(bufEquals(m, plain)).toEqual(true);
           done();
         });
       });
@@ -194,6 +194,10 @@ exports.defineAutoTests = function(){
         }
 
         var currentVector = edVectors[vectorIndex];
+        for (var vectorProperty in currentVector){
+          if (is_hex(currentVector[vectorProperty])) currentVector[vectorProperty] = from_hex(currentVector[vectorProperty]);
+        }
+
         window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_pk(currentVector.sk, function(err, pk){
           if (err){
             throw err;
@@ -201,7 +205,7 @@ exports.defineAutoTests = function(){
             return;
           }
 
-          expect(pk).toEqual(currentVector.pk);
+          expect(bufEquals(pk, currentVector.pk)).toEqual(true);
 
           window.plugins.MiniSodium.crypto_sign_ed25519_sk_to_seed(currentVector.sk, function(err, seed){
             if (err){
@@ -210,7 +214,7 @@ exports.defineAutoTests = function(){
               return;
             }
 
-            expect(seed).toEqual(currentVector.sk.substr(0, window.plugins.MiniSodium.crypto_sign_SEEDBYTES * 2));
+            expect(bufEquals(seed, currentVector.sk.slice(0, window.plugins.MiniSodium.crypto_sign_SEEDBYTES))).toEqual(true);
 
             window.plugins.MiniSodium.crypto_sign_seed_keypair(seed, function(err, keyPair){
               if (err){
@@ -219,8 +223,8 @@ exports.defineAutoTests = function(){
                 return;
               }
 
-              expect(keyPair.sk).toEqual(currentVector.sk);
-              expect(keyPair.pk).toEqual(currentVector.pk);
+              expect(bufEquals(keyPair.sk, currentVector.sk)).toEqual(true);
+              expect(bufEquals(keyPair.pk, currentVector.pk)).toEqual(true);
 
               window.plugins.MiniSodium.crypto_sign(currentVector.m, currentVector.sk, function(err, sm){
                 if (err){
@@ -229,8 +233,8 @@ exports.defineAutoTests = function(){
                   return;
                 }
 
-                expect(sm.substr(0, window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.s);
-                expect(sm.substr(window.plugins.MiniSodium.crypto_sign_BYTES * 2)).toEqual(currentVector.m);
+                expect(bufEquals(m.slice(0, window.plugin.MiniSodium.crypto_sign_BYTES), currentVector.s)).toEqual(true);
+                expect(bufEquals(m.slice(window.plugins.MiniSodium.crypto_sign_BYTES), currentVector.m)).toEqual(true);
 
                 window.plugins.MiniSodium.crypto_sign_open(sm, pk, function(err, m){
                   if (err){
@@ -239,7 +243,7 @@ exports.defineAutoTests = function(){
                     return;
                   }
 
-                  expect(m).toEqual(currentVector.m);
+                  expect(bufEquals(m, currentVector.m)).toEqual(true);
 
                   window.plugins.MiniSodium.crypto_sign_detached(currentVector.m, currentVector.sk, function(err, sig){
                     if (err){
@@ -248,7 +252,7 @@ exports.defineAutoTests = function(){
                       return;
                     }
 
-                    expect(sig).toEqual(currentVector.s);
+                    expect(bufEquals(sig, currentVector.s)).toEqual(true);
 
                     window.plugins.MiniSodium.crypto_sign_verify_detached(sig, currentVector.m, currentVector.pk, function(err, isValid){
                       if (err){

@@ -22,7 +22,7 @@ A minimal build of the [libsodium](https://github.com/jedisct1/libsodium.git) li
 
 	cordova plugin add cordova-plugin-minisodium
 
-__Note:__ This plugin is not built for Android API levels below 16. To set the `minSdkVersion` property in your Cordova app. Add the following line in `config.xml`:
+__Note:__ This plugin is not built for Android API levels below 16. To set the `minSdkVersion` property in your Cordova app (if needed), add the following line in `config.xml`:
 ```
 <preference name="android-minSdkVersion" value="16"/>
 ```
@@ -34,7 +34,7 @@ __Note:__ This plugin is not built for Android API levels below 16. To set the `
 1. Create a Cordova/Phonegap application
 2. Add the iOS and/or the Android platforms
 3. Add the [testing framework](https://github.com/apache/cordova-plugin-test-framework) and [bind its page](https://github.com/apache/cordova-plugin-test-framework#running-plugin-tests) as the main page of the app
-4. Add the following prefenrence in `config.xml`
+4. Add the following preference in `config.xml`
 ```
 <preference name="android-minSdkVersion" value="16"/>
 ```

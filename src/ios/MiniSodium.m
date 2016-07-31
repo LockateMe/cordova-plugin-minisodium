@@ -12,12 +12,7 @@
 }
 
 - (void)crypto_secretbox_easy:(CDVInvokedUrlCommand*) command {
-	//Calling sodium_init at each sodium call. It doesn't overload the required resources, and ensures that an error can be thrown should the call fail
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString *messageHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* message = [self from_hex:messageHex];
@@ -43,12 +38,7 @@
 }
 
 - (void)crypto_secretbox_open_easy:(CDVInvokedUrlCommand*) command {
-	//Calling sodium_init at each sodium call. It doesn't overload the required resources, and ensures that an error can be thrown should the call fail
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString* ciphertextHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* ciphertext = [self from_hex: ciphertextHex];
@@ -78,11 +68,7 @@
 }
 
 -(void)crypto_sign_keypair:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	//No seed is provided
 	unsigned char* pk = (unsigned char*) sodium_malloc(crypto_sign_PUBLICKEYBYTES);
@@ -105,11 +91,7 @@
 }
 
 -(void)crypto_sign_seed_keypair:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	//A seed is provided
 	NSString *seedHex = [command.arguments objectAtIndex: 0];
@@ -142,11 +124,7 @@
 }
 
 -(void)crypto_sign:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString *mHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* m = [self from_hex: mHex];
@@ -174,11 +152,7 @@
 }
 
 -(void)crypto_sign_open:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString *sHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* s = [self from_hex: sHex];
@@ -208,11 +182,7 @@
 }
 
 -(void)crypto_sign_detached:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString *mHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* m = [self from_hex: mHex];
@@ -239,11 +209,7 @@
 }
 
 -(void)crypto_sign_verify_detached:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString *sHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* s = [self from_hex: sHex];
@@ -276,11 +242,7 @@
 }
 
 -(void)crypto_sign_ed25519_sk_to_seed:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString *skHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* sk = [self from_hex: skHex];
@@ -302,11 +264,7 @@
 }
 
 -(void)crypto_sign_ed25519_sk_to_pk:(CDVInvokedUrlCommand*) command {
-	if (self.sodiumInitStatus == -1){
-		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
-		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
-		return;
-	}
+	if (![self sodium_init_check: command]) return;
 
 	NSString *skHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* sk = [self from_hex: skHex];
@@ -325,6 +283,255 @@
 	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 
 	sodium_free(pk);
+}
+
+-(void)crypto_sign_ed25519_sk_to_curve25519:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	NSString* skHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* sk = [self from_hex: skHex];
+
+	unsigned char* skCurve25519 = (unsigned char*) sodium_malloc(crypto_scalarmult_SCALARBYTES);
+
+	CDVPluginResult *result;
+	if (crypto_sign_ed25519_sk_to_curve25519(skCurve25519, sk) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_COMPUTE"];
+	} else {
+		NSString *skCurve25519Hex = [self to_hex: skCurve25519 withLength: crypto_scalarmult_SCALARBYTES];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: skCurve25519Hex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(skCurve25519);
+}
+
+-(void)crypto_sign_ed25519_pk_to_curve25519:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	NSString* pkHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* pk = [self from_hex: pkHex];
+
+	unsigned char* pkCurve25519 = (unsigned char*) sodium_malloc(crypto_scalarmult_BYTES);
+
+	CDVPluginResult *result;
+	if (crypto_sign_ed25519_pk_to_curve25519(pkCurve25519, pk) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_COMPUTE"];
+	} else {
+		NSString *pkCurve25519Hex = [self to_hex: pkCurve25519 withLength: crypto_scalarmult_BYTES];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: pkCurve25519Hex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(pkCurve25519);
+}
+
+-(void)crypto_scalarmult_base:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	NSString *nHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* n = [self from_hex: nHex];
+
+	unsigned char* q = (unsigned char*) sodium_malloc(crypto_scalarmult_BYTES);
+
+	CDVPluginResult *result;
+	if (crypto_scalarmult_base(q, n) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_COMPUTE"];
+	} else {
+		NSString *qHex = [self to_hex: q withLength: crypto_scalarmult_BYTES];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: qHex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(q);
+}
+
+-(void)crypto_scalarmult:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	NSString *nHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* n = [self from_hex: nHex];
+
+	NSString *pHex = [command.arguments objectAtIndex: 1];
+	const unsigned char* p = [self from_hex: pHex];
+
+	unsigned char* q = (unsigned char*) sodium_malloc(crypto_scalarmult_BYTES);
+
+	CDVPluginResult *result;
+	if (crypto_scalarmult(q, n, p) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_COMPUTE"];
+	} else {
+		NSString *qHex = [self to_hex: q withLength: crypto_scalarmult_BYTES];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: qHex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(q);
+}
+
+-(void)crypto_pwhash_scryptsalsa208sha256:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	const unsigned int keyLength = [[command.arguments objectAtIndex: 0] unsignedIntValue];
+
+	NSString *passwordHex = [command.arguments objectAtIndex: 1];
+	const unsigned char* password = [self from_hex: passwordHex];
+	const unsigned long long passwordlen = (unsigned long long)[passwordHex length] / 2;
+
+	NSString *saltHex = [command.arguments objectAtIndex: 2];
+	const unsigned char* salt = [self from_hex: saltHex];
+
+	const unsigned int opsLimit = [[command.arguments objectAtIndex: 3] unsignedIntValue];
+	const unsigned int memLimit = [[command.arguments objectAtIndex: 4] unsignedIntValue];
+
+	unsigned char* key = (unsigned char*) sodium_malloc(keyLength);
+
+	CDVPluginResult *result;
+	if (crypto_pwhash_scryptsalsa208sha256(key, keyLength, password, passwordlen, salt, opsLimit, memLimit) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_COMPUTE"];
+	} else {
+		NSString *keyHex = [self to_hex: key withLength: keyLength];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: keyHex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(key);
+}
+
+-(void)crypto_pwhash_scryptsalsa208sha256_ll:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	NSString *passwordHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* password = [self from_hex: passwordHex];
+	const unsigned long long passwordlen = (unsigned long long) [passwordHex length] / 2;
+
+	NSString *saltHex = [command.arguments objectAtIndex: 1];
+	const unsigned char* salt = [self from_hex: saltHex];
+	const unsigned long long saltlen = (unsigned long long) [saltHex length] / 2;
+
+	const int opsLimit = [[command.arguments objectAtIndex: 2] unsignedIntValue];
+	const int r = [[command.arguments objectAtIndex: 3] unsignedIntValue];
+	const int p = [[command.arguments objectAtIndex: 4] unsignedIntValue];
+	const int keyLength = [[command.arguments objectAtIndex: 5] unsignedIntValue];
+
+	unsigned char* key = (unsigned char*) sodium_malloc(keyLength);
+
+	CDVPluginResult *result;
+	if (crypto_pwhash_scryptsalsa208sha256_ll(password, passwordlen, salt, saltlen, opsLimit, r, p, key, keyLength) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_COMPUTE"];
+	} else {
+		NSString *keyHex = [self to_hex: key withLength: keyLength];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: keyHex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(key);
+}
+
+-(void)crypto_box_keypair:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	unsigned char* pk = (unsigned char*) sodium_malloc(crypto_box_PUBLICKEYBYTES);
+	unsigned char* sk = (unsigned char*) sodium_malloc(crypto_box_SECRETKEYBYTES);
+
+	CDVPluginResult *result;
+	if (crypto_box_keypair(pk, sk) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_GENERATE_KEYPAIR"];
+	} else {
+		NSString *pkHex = [self to_hex: pk withLength: crypto_box_PUBLICKEYBYTES];
+		NSString *skHex = [self to_hex: sk withLength: crypto_box_SECRETKEYBYTES];
+
+		NSDictionary *resObj = [NSDictionary dictionaryWithDictionary:@{@"pk": pkHex, @"sk": skHex}];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDictionary: resObj];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(pk);
+	sodium_free(sk);
+}
+
+-(void)crypto_box_easy:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	NSString *mHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* m = [self from_hex: mHex];
+	const unsigned long long mlen = (unsigned long long) [mHex length] / 2;
+
+	NSString *nHex = [command.arguments objectAtIndex: 1];
+	const unsigned char* n = [self from_hex: nHex];
+
+	NSString *pkHex = [command.arguments objectAtIndex: 2];
+	const unsigned char* pk = [self from_hex: pkHex];
+
+	NSString *skHex = [command.arguments objectAtIndex: 3];
+	const unsigned char* sk = [self from_hex: skHex];
+
+	unsigned long long clen = mlen + crypto_box_MACBYTES;
+	unsigned char* c = (unsigned char*) sodium_malloc(clen);
+
+	CDVPluginResult *result;
+	if (crypto_box_easy(c, m, mlen, n, pk, sk) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_ENCRYPT"];
+	} else {
+		NSString *cHex = [self to_hex: c withLength: clen];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: cHex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	sodium_free(c);
+}
+
+-(void)crypto_box_open_easy:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+
+	(m, c, clen, n, pk, sk)
+
+	NSString *cHex = [command.arguments objectAtIndex: 0];
+	const unsigned char* c = [self from_hex: cHex];
+	const unsigned long long clen = (unsigned long long) [cHex length] / 2;
+
+	NSString *nHex = [command.arguments objectAtIndex: 1];
+	const unsigned char* n = [self from_hex: nHex];
+
+	NSString *pkHex = [command.arguments objectAtIndex: 2];
+	const unsigned char* pk = [self from_hex: pkHex];
+
+	NSString *skHex = [command.arguments objectAtIndex: 3];
+	const unsigned char* sk = [self from_hex: skHex];
+
+	unsigned long long mlen = clen - crypto_box_MACBYTES;
+	unsigned char* m = (unsigned char*) sodium_malloc(mlen);
+
+	CDVPluginResult *result;
+	if (crypto_box_open_easy(m, c, clen, n, pk, sk) != 0){
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_DECRYPT"];
+	} else {
+		NSString *mHex = [self to_hex: m withLength: mlen];
+		result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: mHex];
+	}
+
+	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+
+	free(m);
+}
+
+-(void)crypto_box_seal:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+}
+
+-(void)crypto_box_seal_open:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
+}
+
+-(void)crypto_generichash:(CDVInvokedUrlCommand*)command {
+	if (![self sodium_init_check: command]) return;
 }
 
 -(unsigned char*)from_hex:(NSString*)s {
@@ -350,6 +557,16 @@
 	}
 
 	return [hexMut lowercaseString];
+}
+
+-(bool)sodium_init_check:(CDVInvokedUrlCommand*)command {
+	if (self.sodiumInitStatus == -1){
+		CDVPluginResult *result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"SODIUM_INIT_FAILED"];
+		[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
+		return false;
+	}
+
+	return true;
 }
 
 @end

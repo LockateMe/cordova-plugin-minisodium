@@ -350,6 +350,275 @@ public class MiniSodium extends CordovaPlugin {
 			});
 
 			return true;
+		} else if (action.equals("crypto_sign_ed25519_sk_to_curve25519")){
+			String skHex;
+
+			try {
+				skHex = args.getString(0);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] curve25519Sk = new byte[libsodium.crypto_scalarmult_scalarbytes()];
+
+					int cryptoStatus = libsodium.crypto_sign_ed25519_sk_to_curve25519(curve25519Sk, sk);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(curve25519Sk));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_sign_ed25519_pk_to_curve25519")){
+			String pkHex;
+
+			try {
+				pkHex = args.getString(0);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] pk = fromHex(pkHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] curve25519Pk = new byte[libsodium.crypto_scalarmult_bytes()];
+
+					int cryptoStatus = libsodium.crypto_sign_ed25519_pk_to_curve25519(curve25519Pk, pk);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(curve25519Pk));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_scalarmult_base")){
+			String nHex;
+
+			try {
+				nHex = args.getString(0);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] n = fromHex(nHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] q = new byte[libsodium.crypto_scalarmult_bytes()];
+
+					int cryptoStatus = libsodium.crypto_scalarmult_base(q, n);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(q));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_scalarmult")){
+			String nHex, pHex;
+
+			try {
+				nHex = args.getString(0);
+				pHex = args.getString(1);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] n = fromHex(nHex);
+			final byte[] p = fromHex(pHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] q = new byte[libsodium.crypto_scalarmult_bytes()];
+
+					int cryptoStatus = libsodium.crypto_scalarmult(q, n, p);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(q));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_pwhash_scryptsalsa208sha256")){
+			String passwordHex, saltHex;
+			int _keyLength, _opsLimit, _memLimit;
+
+			try {
+				_keyLength = args.getInt(0);
+				passwordHex = args.getString(1);
+				saltHex = args.getString(2);
+				_opsLimit = args.getInt(3);
+				_memLimit = args.getInt(4);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final int keyLength = _keyLength,
+				opsLimit = _opsLimit,
+				memLimit = _memLimit;
+
+			final byte[] password = fromHex(passwordHex);
+			final int passwordlen = password.length;
+			final byte[] salt = fromHex(saltHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] key = new byte[keyLength];
+
+					int cryptoStatus = libsodium.crypto_pwhash_scryptsalsa208sha256(key, keyLength, password, passwordlen, salt, opsLimit, memLimit);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(key));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_pwhash_scryptsalsa208sha256_ll")){
+			String passwordHex, saltHex;
+			int _opsLimit, _r, _p, _keyLength;
+
+			try {
+				passwordHex = args.getString(0);
+				saltHex = args.getString(1);
+				_opsLimit = args.getInt(2);
+				_r = args.getInt(3);
+				_p = args.getInt(4);
+				_keyLength = args.getInt(5);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final int opsLimit = _opsLimit,
+				r = _r,
+				p = _p,
+				keyLength = _keyLength;
+
+			final byte[] password = fromHex(passwordHex);
+			final int passwordlen = password.length;
+			final byte[] salt = fromHex(saltHex);
+			final int saltlen = salt.length;
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] key = new byte[keyLength];
+
+					int cryptoStatus = libsodium.crypto_pwhash_scryptsalsa208sha256_ll(password, passwordlen, salt, saltlen, opsLimit, r, p, key, keyLength);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_COMPUTE");
+						return;
+					}
+
+					callbackContext.success(dumpHex(key));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_box_keypair")){
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] pk = new byte[libsodium.crypto_box_publickeybytes()];
+					byte[] sk = new byte[libsodium.crypto_box_secretkeybytes()];
+
+					int cryptoStatus = libsodium.crypto_box_keypair(pk, sk);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_GENERATE_KEYPAIR");
+						return;
+					}
+
+					JSONObject resultObj = new JSONObject();
+					try {
+						resultObj.put("sk", dumpHex(sk));
+						resultObj.put("pk", dumpHex(pk));
+					} catch (Exception e){
+						callbackContext.error(e.getMessage());
+						return;
+					}
+
+					callbackContext.success(resultObj);
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_box_easy")){
+			String mHex, nHex, pkHex, skHex;
+
+			try {
+				mHex = args.getString(0);
+				nHex = args.getString(1);
+				pkHex = args.getString(2);
+				skHex = args.getString(3);
+			} catch (Exception e){
+				callbackContext.error(e.getMessage());
+				return false;
+			}
+
+			final byte[] m = fromHex(mHex)
+			final int mlen = m.length;
+			final byte[] n = fromHex(n);
+			final byte[] pk = fromHex(pkHex);
+			final byte[] sk = fromHex(skHex);
+
+			cordova.getThreadPool().execute(new Runnable(){
+				public void run(){
+					byte[] c = new byte[mlen + libsodium.crypto_box_macbytes()];
+
+					int cryptoStatus = libsodium.crypto_box_easy(c, m, mlen, n, pk, sk);
+					if (cryptoStatus != 0){
+						Log.d(LOGTAG, "cryptoStatus:" + cryptoStatus);
+						callbackContext.error("CANNOT_ENCRYPT");
+						return;
+					}
+
+					callbackContext.success(dumpHex(c));
+				}
+			});
+
+			return true;
+		} else if (action.equals("crypto_box_open_easy")){
+
+			return true;
+		} else if (action.equals("crypto_box_seal")){
+
+			return true;
+		} else if (action.equals("crypto_box_seal_open")){
+
+			return true;
+		} else if (action.equals("crypto_generichash")){
+
+			return true;
 		} else {
 			callbackContext.error("Invalid method: " + action);
 			return false;
