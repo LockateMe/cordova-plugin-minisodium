@@ -491,8 +491,6 @@
 -(void)crypto_box_open_easy:(CDVInvokedUrlCommand*)command {
 	if (![self sodium_init_check: command]) return;
 
-	(m, c, clen, n, pk, sk)
-
 	NSString *cHex = [command.arguments objectAtIndex: 0];
 	const unsigned char* c = [self from_hex: cHex];
 	const unsigned long long clen = (unsigned long long) [cHex length] / 2;
