@@ -16,4 +16,7 @@
 	<js-module name="ed25519vectors" src="ed-vectors.js">
 		<clobbers target="window.plugins.ed25519vectors"/>
 	</js-module>
+	<js-module name="generichashvectors" src="generichash-vectors.js">
+		<clobbers target="window.plugins.generichashVectors"/>
+	</js-module>
 </plugin>

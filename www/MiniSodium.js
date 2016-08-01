@@ -37,7 +37,7 @@ function resultHandlerFactory(cb){
 	}
 }
 
-const TO_STRING_CHUNK_SIZE = 8192;
+var TO_STRING_CHUNK_SIZE = 8192;
 
 var MiniSodium = {
 	//Secretbox construction (methods and constants)
@@ -361,7 +361,7 @@ var MiniSodium = {
 		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
 		try {
-			isValidInput(message, 'message');
+			isValidInput(cipher, 'cipher');
 			isValidInput(nonce, 'nonce', MiniSodium.crypto_box_NONCEBYTES);
 			isValidInput(senderPk, 'senderPk', MiniSodium.crypto_box_PUBLICKEYBYTES);
 			isValidInput(receiverSk, 'receiverSk', MiniSodium.crypto_box_SECRETKEYBYTES);
@@ -370,12 +370,12 @@ var MiniSodium = {
 			return;
 		}
 
-		message = to_hex(message);
+		cipher = to_hex(cipher);
 		nonce = to_hex(nonce);
 		senderPk = to_hex(senderPk);
 		receiverSk = to_hex(receiverSk);
 
-		var params = [message, nonce, senderPk, receiverSk];
+		var params = [cipher, nonce, senderPk, receiverSk];
 		cordova.exec(resultHandlerFactory(callback), callback, 'MiniSodium', 'crypto_box_open_easy', params);
 	},
 	crypto_box_seal: function(message, receiverPk, callback){
@@ -421,6 +421,11 @@ var MiniSodium = {
 	},
 	//Simple generic hashing
 	crypto_generichash_BYTES: 32,
+	crypto_generichash_BYTES_MIN: 16,
+	crypto_generichash_BYTES_MAX: 64,
+	crypto_generichash_KEYBYTES: 32,
+	crypto_generichash_KEYBYTES_MIN: 16,
+	crypto_generichash_KEYBYTES_MAX: 64,
 	crypto_generichash: function(hashLength, message, key, callback){
 		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
@@ -432,8 +437,8 @@ var MiniSodium = {
 			return;
 		}
 
-		if (hashLength < MiniSodium.crypto_generichash_BYTES){
-			callback(new Error('hashLength must be superior or equal to crypto_generichash_BYTES'));
+		if (hashLength < MiniSodium.crypto_generichash_BYTES_MIN || hashLength > MiniSodium.crypto_generichash_BYTES_MAX){
+			callback(new Error('hashLength must be in the range [crypto_generichash_BYTES_MIN; crypto_generichash_BYTES_MAX]'));
 			return;
 		}
 
@@ -451,6 +456,11 @@ var MiniSodium = {
 
 			key = to_hex(key);
 
+			if (key.length < MiniSodium.crypto_generichash_KEYBYTES_MIN * 2 || key.length > MiniSodium.crypto_generichash_KEYBYTES_MAX * 2){
+				callback(new Error('hashing key\'s length must be in the range [crypto_generichash_KEYBYTES_MIN; crypto_generichash_KEYBYTES_MAX]'));
+				return;
+			}
+
 			params = [hashLength, message, key];
 		} else {
 			params = [hashLength, message];
@@ -460,7 +470,8 @@ var MiniSodium = {
 	},
 	//Hexdecimal encoding helpers
 	from_hex: function(str) {
-    if (!is_hex(str)) {
+		if (str instanceof Uint8Array) return str;
+		if (!is_hex(str)) {
       throw new TypeError("The provided string doesn't look like hex data");
     }
     var result = new Uint8Array(str.length / 2);
@@ -563,6 +574,9 @@ var MiniSodium = {
 		return bytes;
 	}
 };
+
+MiniSodium.to_string = MiniSodium.from_buffer;
+MiniSodium.from_string = MiniSodium.to_buffer;
 
 var from_hex = MiniSodium.from_hex;
 var to_hex = MiniSodium.to_hex;

@@ -517,7 +517,7 @@
 
 	[self.commandDelegate sendPluginResult: result callbackId: command.callbackId];
 
-	free(m);
+	sodium_free(m);
 }
 
 -(void)crypto_box_seal:(CDVInvokedUrlCommand*)command {
@@ -598,19 +598,22 @@
 	unsigned char* h = (unsigned char*) sodium_malloc(hlen);
 
 	CDVPluginResult *result;
+	int cryptoStatus;
 	if ([command.arguments count] == 2){
-		if (crypto_generichash(h, hlen, m, mlen, NULL, 0) != 0){
+		if ((cryptoStatus = crypto_generichash(h, hlen, m, mlen, nil, 0)) != 0){
+			NSLog([NSString stringWithFormat: @"cryptoStatus:%d", cryptoStatus]);
 			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_HASH"];
 		} else {
 			NSString *hHex = [self to_hex: h withLength: crypto_generichash_BYTES];
 			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: hHex];
 		}
 	} else if ([command.arguments count] == 3){
-		NSString *kHex = [command.arguments objectAtIndex: 1];
+		NSString *kHex = [command.arguments objectAtIndex: 2];
 		const unsigned char* k = [self from_hex: kHex];
 		const unsigned long long klen = (unsigned long long)[kHex length] / 2;
 
-		if (crypto_generichash(h, hlen, m, mlen, k, klen) != 0){
+		if ((cryptoStatus = crypto_generichash(h, hlen, m, mlen, k, klen)) != 0){
+			NSLog([NSString stringWithFormat: @"cryptoStatus:%d", cryptoStatus]);
 			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_HASH"];
 		} else {
 			NSString *hHex = [self to_hex: h withLength: crypto_generichash_BYTES];
