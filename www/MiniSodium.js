@@ -142,7 +142,7 @@ var MiniSodium = {
 		signedMessage = to_hex(signedMessage);
 		publicKey = to_hex(publicKey);
 
-		if (signedMessage.length < MiniSodium.crypto_sign_BYTES){
+		if (signedMessage.length < MiniSodium.crypto_sign_BYTES * 2){
 			callback(new Error('signed message must be longer than crypto_sign_BYTES'));
 			return;
 		}
@@ -331,24 +331,132 @@ var MiniSodium = {
 	crypto_box_SEEDBYTES: 32,
 	crypto_box_MACBYTES: 16,
 	crypto_box_SEALBYTES: 48,
-	crypto_box_keypair: function(){
+	crypto_box_keypair: function(callback){
+		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
+		cordova.exec(resultHandlerFactory(callback), callback, 'MiniSodium', 'crypto_box_keypair', []);
 	},
-	crypto_box_easy: function(){
+	crypto_box_easy: function(message, nonce, receiverPk, senderSk, callback){
+		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
+		try {
+			isValidInput(message, 'message');
+			isValidInput(nonce, 'nonce', MiniSodium.crypto_box_NONCEBYTES);
+			isValidInput(receiverPk, 'receiverPk', MiniSodium.crypto_box_PUBLICKEYBYTES);
+			isValidInput(senderSk, 'senderSk', MiniSodium.crypto_box_SECRETKEYBYTES);
+		} catch (e){
+			callback(e);
+			return;
+		}
+
+		message = to_hex(message);
+		nonce = to_hex(nonce);
+		receiverPk = to_hex(receiverPk);
+		senderSk = to_hex(senderSk);
+
+		var params = [message, nonce, receiverPk, senderSk];
+		cordova.exec(resultHandlerFactory(callback), callback, 'MiniSodium', 'crypto_box_easy', params);
 	},
-	crypto_box_open_easy: function(){
+	crypto_box_open_easy: function(cipher, nonce, senderPk, receiverSk, callback){
+		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
+		try {
+			isValidInput(message, 'message');
+			isValidInput(nonce, 'nonce', MiniSodium.crypto_box_NONCEBYTES);
+			isValidInput(senderPk, 'senderPk', MiniSodium.crypto_box_PUBLICKEYBYTES);
+			isValidInput(receiverSk, 'receiverSk', MiniSodium.crypto_box_SECRETKEYBYTES);
+		} catch (e){
+			callback(e);
+			return;
+		}
+
+		message = to_hex(message);
+		nonce = to_hex(nonce);
+		senderPk = to_hex(senderPk);
+		receiverSk = to_hex(receiverSk);
+
+		var params = [message, nonce, senderPk, receiverSk];
+		cordova.exec(resultHandlerFactory(callback), callback, 'MiniSodium', 'crypto_box_open_easy', params);
 	},
-	crypto_box_seal: function(){
+	crypto_box_seal: function(message, receiverPk, callback){
+		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
+		try {
+			isValidInput(message, 'message');
+			isValidInput(receiverPk, 'receiverPk', MiniSodium.crypto_box_PUBLICKEYBYTES);
+		} catch (e){
+			callback(e);
+			return;
+		}
+
+		message = to_hex(message);
+		receiverPk = to_hex(receiverPk);
+
+		var params = [message, receiverPk];
+		cordova.exec(resultHandlerFactory(callback), callback, 'MiniSodium', 'crypto_box_seal', params);
 	},
-	crypto_box_seal_open: function(){
+	crypto_box_seal_open: function(sealedMessage, receiverPk, receiverSk, callback){
+		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
+		try {
+			isValidInput(sealedMessage, 'sealedMessage');
+			isValidInput(receiverPk, 'receiverPk', MiniSodium.crypto_box_PUBLICKEYBYTES);
+			isValidInput(receiverSk, 'receiverSk', MiniSodium.crypto_box_SECRETKEYBYTES);
+		} catch (e){
+			callback(e);
+			return;
+		}
+
+		sealedMessage = to_hex(sealedMessage);
+		receiverPk = to_hex(receiverPk);
+		receiverSk = to_hex(receiverSk);
+
+		if (sealedMessage.length < MiniSodium.crypto_box_SEALBYTES * 2){
+			callback(new Error('sealedMessage must be longer than crypto_box_SEALBYTES'));
+			return;
+		}
+
+		var params = [sealedMessage, receiverPk, receiverSk];
+		cordova.exec(resultHandlerFactory(callback), callback, 'MiniSodium', 'crypto_box_seal_open', params);
 	},
 	//Simple generic hashing
-	crypto_generichash: function(){
+	crypto_generichash_BYTES: 32,
+	crypto_generichash: function(hashLength, message, key, callback){
+		if (typeof callback != 'function') throw new TypeError('callback must be a function');
 
+		try {
+			isValidPositiveUint(hashLength);
+			isValidInput(message);
+		} catch (e){
+			callback(e);
+			return;
+		}
+
+		if (hashLength < MiniSodium.crypto_generichash_BYTES){
+			callback(new Error('hashLength must be superior or equal to crypto_generichash_BYTES'));
+			return;
+		}
+
+		message = to_hex(message);
+
+		var params;
+
+		if (key){
+			try {
+				isValidInput(key, 'key');
+			} catch (e){
+				callback(e);
+				return;
+			}
+
+			key = to_hex(key);
+
+			params = [hashLength, message, key];
+		} else {
+			params = [hashLength, message];
+		}
+
+		cordova.exec(resultHandlerFactory(callback), callback, 'MiniSodium', 'crypto_generichash', params);
 	},
 	//Hexdecimal encoding helpers
 	from_hex: function(str) {
