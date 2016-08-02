@@ -616,7 +616,7 @@
 			NSLog([NSString stringWithFormat: @"cryptoStatus:%d", cryptoStatus]);
 			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString: @"CANNOT_HASH"];
 		} else {
-			NSString *hHex = [self to_hex: h withLength: crypto_generichash_BYTES];
+			NSString *hHex = [self to_hex: h withLength: hlen];
 			result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString: hHex];
 		}
 	} else {
