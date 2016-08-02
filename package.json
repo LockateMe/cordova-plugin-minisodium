@@ -21,16 +21,21 @@
     "url": "git+https://github.com/LockateMe/cordova-plugin-minisodium.git"
   },
   "keywords": [
+    "ecosystem:cordova",
     "cordova",
     "cordova-ios",
     "cordova-android",
-    "ecosystem:cordova",
     "curve25519",
     "ed25519",
     "X25519",
+    "scrypt",
+    "blake2b",
     "ecdh",
     "eddsa",
     "secretbox",
+    "box",
+    "sealed-box",
+    "hash",
     "crypto",
     "cryptography"
   ],
