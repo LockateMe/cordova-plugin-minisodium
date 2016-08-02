@@ -326,14 +326,15 @@ exports.defineAutoTests = function(){
 
     it('should pass the test vectors', function(done){
       var edVectors = window.plugins.ed25519vectors;
-      var vectorIndex = 0;
+      var vectorCount = 0;
+      var numTests = Math.round(edVectors.length * .1);
 
       function testOne(){
-        if (vectorIndex % 128 === 0){
+        /*if (vectorIndex % 128 === 0){
           console.log('Ed25519 testing: ' + Math.round((vectorIndex / edVectors.length) * 100) + '% complete');
-        }
+        }*/
 
-        var currentVector = edVectors[vectorIndex];
+        var currentVector = edVectors[Math.floor(Math.random() * edVectors.length)];
         for (var vectorProperty in currentVector){
           if (is_hex(currentVector[vectorProperty])) currentVector[vectorProperty] = from_hex(currentVector[vectorProperty]);
         }
@@ -414,8 +415,8 @@ exports.defineAutoTests = function(){
       }
 
       function nextVector(){
-        vectorIndex++;
-        if (vectorIndex == edVectors.length){
+        vectorCount++;
+        if (vectorCount == numTests){
           console.log('Ed25519 testing - completed');
           done();
         } else setTimeout(testOne, 0);
@@ -778,15 +779,16 @@ exports.defineAutoTests = function(){
       var key = vectors.key;
       vectors = vectors.vectors;
       var currentVector;
-      var vectorIndex = 0;
+      var vectorCount = 0;
+      var numTests = Math.round(vectors.length * .1);
 
       function testOne(){
-        currentVector = vectors[vectorIndex];
-        console.log('current hash vector:' + (vectorIndex + 1));
+        currentVector = vectors[Math.floor(Math.random() * vectors.length)];
+        console.log('current hash vector:' + (vectorCount + 1));
         //from_hex, before testing the vector
-        /*for (var prop in currentVector){
+        for (var prop in currentVector){
           if (is_hex(currentVector[prop])) currentVector[prop] = from_hex(currentVector[prop]);
-        }*/
+        }
 
         var hashLength = is_hex(currentVector.hash) ? currentVector.hash.length / 2 : currentVector.hash.length;
         MiniSodium.crypto_generichash(hashLength, currentVector.input, key, function(err, hash){
@@ -796,15 +798,15 @@ exports.defineAutoTests = function(){
             return;
           }
 
-          expect(to_hex(hash)).toEqual(currentVector.hash);
+          expect(bufEquals(hash, currentVector.hash)).toEqual(true);
 
           next();
         });
       }
 
       function next(){
-        vectorIndex++;
-        if (vectorIndex == vectors.length) done();
+        vectorCount++;
+        if (vectorCount == numTests) done();
         else testOne();
       }
 
