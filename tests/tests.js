@@ -417,7 +417,7 @@ exports.defineAutoTests = function(){
       function nextVector(){
         vectorCount++;
         if (vectorCount == numTests){
-          console.log('Ed25519 testing - completed');
+          //console.log('Ed25519 testing - completed');
           done();
         } else setTimeout(testOne, 0);
       }
@@ -612,7 +612,7 @@ exports.defineAutoTests = function(){
       var currentVector;
 
       function testOne(){
-        console.log('Scrypt test vector ' + (vectorIndex + 1));
+        //console.log('Scrypt test vector ' + (vectorIndex + 1));
         currentVector = scryptCase1[vectorIndex];
 
         for (var prop in currentVector){
@@ -647,7 +647,7 @@ exports.defineAutoTests = function(){
       var currentVector;
 
       function testOne(){
-        console.log('Scrypt_ll test vector ' + (vectorIndex + 1));
+        //console.log('Scrypt_ll test vector ' + (vectorIndex + 1));
         currentVector = scryptLLCase[vectorIndex];
 
         for (var prop in currentVector){
@@ -784,7 +784,7 @@ exports.defineAutoTests = function(){
 
       function testOne(){
         currentVector = vectors[Math.floor(Math.random() * vectors.length)];
-        console.log('current hash vector:' + (vectorCount + 1));
+        //console.log('current hash vector:' + (vectorCount + 1));
         //from_hex, before testing the vector
         for (var prop in currentVector){
           if (is_hex(currentVector[prop])) currentVector[prop] = from_hex(currentVector[prop]);
