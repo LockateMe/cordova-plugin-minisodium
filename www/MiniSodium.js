@@ -497,7 +497,7 @@ var MiniSodium = {
 	is_hex: function(s){
 		return typeof s === 'string' && s.length % 2 === 0 && (s.length > 0 ? /^([a-f]|[0-9])+$/ig.test(s) : true);
 	},
-	from_buffer: function(bytes) { //The to_string function from libsodium.js
+	to_string: function(bytes) { //The to_string function from libsodium.js
 		if (typeof TextDecoder === "function") {
 			return new TextDecoder("utf-8", {fatal: true}).decode(bytes);
 		}
@@ -562,7 +562,7 @@ var MiniSodium = {
 		}
 		return totalString;
 	},
-	to_buffer: function(str) { //The from_string function from libsodium.js
+	from_string: function(str) { //The from_string function from libsodium.js
 		if (typeof TextEncoder === "function") {
 			return new TextEncoder("utf-8").encode(str);
 		}
@@ -574,9 +574,6 @@ var MiniSodium = {
 		return bytes;
 	}
 };
-
-MiniSodium.to_string = MiniSodium.from_buffer;
-MiniSodium.from_string = MiniSodium.to_buffer;
 
 var from_hex = MiniSodium.from_hex;
 var to_hex = MiniSodium.to_hex;
