@@ -495,7 +495,7 @@ var MiniSodium = {
 		return str;
 	},
 	is_hex: function(s){
-		return typeof s === 'string' && s.length % 2 === 0 && (s.length > 0 ? /^([a-f]|[0-9])+$/ig.test(s) : true);
+		return typeof s === 'string' && s.length % 2 === 0 && (s.length > 0 ? !(/[^a-f0-9]/ig.test(s)) : true);
 	},
 	to_string: function(bytes) { //The to_string function from libsodium.js
 		if (typeof TextDecoder === "function") {
