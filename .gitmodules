@@ -3,4 +3,4 @@
 	url = https://github.com/jedisct1/libsodium
 [submodule "libsodium-jni"]
 	path = libsodium-jni
-	url = https://github.com/joshjdevl/libsodium-jni.git
+	url = https://github.com/E-IS/libsodium-jni.git
