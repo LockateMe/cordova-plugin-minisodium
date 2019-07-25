@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-minisodium",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A minimal binding to the libsodium library, as a plugin for Cordova applications on iOS and Android",
   "main": "index.js",
   "cordova": {
