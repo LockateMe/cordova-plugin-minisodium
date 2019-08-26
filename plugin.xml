@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schema.android.com/apk/res/android" id="cordova-plugin-minisodium" version="1.0.0">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schema.android.com/apk/res/android" id="cordova-plugin-minisodium" version="1.0.1">
 	<name>MiniSodium</name>
 	<description>
 		A minimal build of the libsodium library, as a plugin for Cordova applications on iOS and Android
