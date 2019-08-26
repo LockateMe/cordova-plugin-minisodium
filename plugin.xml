@@ -40,7 +40,7 @@
 		</config-file>
 
 		<config-file target="AndroidManifest.xml" parent="/manifest">
-			<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="28"/>
+			<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28"/>
 		</config-file>
 
 		<source-file src="src/android/me/lockate/plugins/MiniSodium.java" target-dir="src/me/lockate/plugins" />
