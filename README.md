@@ -92,9 +92,9 @@ __NOTE:__ the constants `crypto_pwhash_scryptsalsa208sha256_*_SENSITIVE` have no
 
 	cordova plugin add cordova-plugin-minisodium
 
-__Note:__ This plugin is not built for Android API levels below 16. To set the `minSdkVersion` property in your Cordova app (if needed), add the following line in `config.xml`:
+__Note:__ This plugin is not built for Android API levels below 21. To set the `minSdkVersion` property in your Cordova app (if needed), add the following line in `config.xml`:
 ```
-<preference name="android-minSdkVersion" value="16"/>
+<preference name="android-minSdkVersion" value="21"/>
 ```
 
 ## Usage
@@ -158,7 +158,7 @@ __[Generic hashing](https://download.libsodium.org/libsodium/content/hashing/gen
 3. Add the [testing framework](https://github.com/apache/cordova-plugin-test-framework) and [bind its page](https://github.com/apache/cordova-plugin-test-framework#running-plugin-tests) as the main page of the app
 4. Add the following preference in `config.xml`
 ```
-<preference name="android-minSdkVersion" value="16"/>
+<preference name="android-minSdkVersion" value="21"/>
 ```
 5. Add this plugin
 6. Add this plugin's test cases, by adding the plugin located in the `tests` folder

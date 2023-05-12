@@ -1,6 +1,6 @@
 GET_DEPENDENCIES = false
 
-.PHONY: ios android get-externals rebuild clearall distclean distclean-ios distclean-android
+.PHONY: android get-externals rebuild clearall distclean distclean-ios distclean-android
 
 ios: src/libsodium-ios/
 
@@ -15,9 +15,9 @@ libsodium/libsodium-ios/: libsodium/autogen.sh
 src/libsodium-jni/libsodium-jni-release.aar: libsodium-jni/build/outputs/aar/libsodium-jni-release.aar
 	cp libsodium-jni/build/outputs/aar/libsodium-jni-release.aar src/libsodium-jni/libsodium-jni-release.aar
 
-libsodium-jni/build/outputs/aar/libsodium-jni-release.aar: libsodium-jni/build.sh
+libsodium-jni/build/outputs/aar/libsodium-jni-release.aar: libsodium-jni/build-linux.sh
 	cd libsodium-jni && \
-	./build.sh && \
+	./build-linux.sh && \
 	./build-kaliumjni.sh && \
 	./build-libsodiumjni.sh
 
@@ -27,8 +27,8 @@ libsodium/autogen.sh:
 	fi
 	echo "libsodium has been cloned"
 
-libsodium-jni/build.sh:
-	if [ -d libsodium-jni ]; then
+libsodium-jni/build-linux.sh:
+	if [[ -d libsodium-jni ]]; then
 		make get-externals
 	fi
 	echo "libsodium-jni has been cloned"
@@ -36,13 +36,13 @@ libsodium-jni/build.sh:
 get-externals:
 	git submodule init
 	git submodule sync
-	git submodule update --recursive
+	git submodule update --recursive --remote --force
 ifeq ($(GET_DEPENDENCIES), true)
-	cd libsodium-jni && \
-	if [ uname -a | grep -q -i darwin ]; then \
-		./dependencies-mac.sh \
-	else \
-		./dependencies-linux.sh \
+	cd libsodium-jni
+	if [[ uname -a | grep -q -i darwin ]]; then
+		./dependencies-mac.sh
+	else
+		./dependencies-linux.sh
 	fi
 endif
 
